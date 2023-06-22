@@ -1,4 +1,4 @@
-collection = [
+sales_data = [
     {
         "product": "Laptop",
         "quantity": 1,
