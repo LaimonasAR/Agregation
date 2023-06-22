@@ -27,4 +27,57 @@ Task is to analyze given data to:
 
 """
 
+from pymongo import MongoClient
+from pymongo.database import Database
+from pymongo.collection import Collection
+from pymongo.cursor import Cursor
+from typing import List, Dict, Any
 
+
+class DbTarget:
+    def __init__(self, host: str, port: int, db_name: str, collection: str) -> None:
+        self.host = host
+        self.port = port
+        self.db_name = db_name
+        self.collection = collection
+
+    def connect_to_mongodb(self) -> Database:
+        client = MongoClient(self.host, self.port)
+        database = client[self.db_name]
+        return database
+
+
+class FilterAllProd:
+    def __init__(self, collection: Collection, filter_criteria: List[Dict[str, Any]]):
+        self.collection = collection
+        self.filter_criteria = filter_criteria
+
+    def filter_documents(self) -> Cursor:
+        pipeline = [{"$match": {"$and": self.filter_criteria}}]
+        return collection.aggregate(pipeline)
+
+
+db_task = DbTarget(host="0.0.0.0", port=27017, db_name="Target", collection="sales")
+db = db_task.connect_to_mongodb()
+collection = db["sales"]
+
+
+def find_april_sales():
+    criteria: List[Dict[str, Any]] = [
+        {
+            "$and": [
+                {"date": {"$gt": "2023-04-01T00:00:00Z"}},
+                {"date": {"$lt": "2023-04-30T23:59:00Z"}},
+            ]
+        }
+    ]
+
+    april_sales = FilterAllProd(collection=collection, filter_criteria=criteria)
+    for sale in april_sales.filter_documents():
+        print(sale)
+
+
+if __name__ == "__main__":
+    print("-----April sales begin----")
+    find_april_sales()
+    print("-----April sales end----")
