@@ -127,6 +127,25 @@ def get_best_customer_purchases():
         # return customer
 
 
+def highest_selling_prod():
+    pipeline = [
+        {
+            "$group": {
+                "_id": {
+                    "product": "$product",
+                },
+                "count": {"$sum": 1},
+            }
+        },
+        {"$sort": {"count": -1}},
+        {"$limit": 1},
+    ]
+    aggr = Agregation(collection, pipeline)  # Type: Cursor
+    result = aggr.aggr_documents()
+
+    for product in result:
+        print(product)
+
 
 if __name__ == "__main__":
     print("-----April sales begin----")
@@ -138,3 +157,6 @@ if __name__ == "__main__":
     print("-----Best customer purchases begin----")
     get_best_customer_purchases()
     print("-----Best customer purchases end----")
+    print("-----Best selling product begin----")
+    highest_selling_prod()
+    print("-----Best selling product end----")
