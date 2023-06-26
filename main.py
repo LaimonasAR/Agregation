@@ -86,7 +86,7 @@ class Agregation:
         self.collection = collection
         self.pipeline = pipeline
 
-    def group_documents(self) -> Cursor:
+    def aggr_documents(self) -> Cursor:
         # pipeline = [{"$group": self.group_fields}]
         return self.collection.aggregate(self.pipeline)
 
@@ -107,10 +107,24 @@ def find_best_customer():
     ]
 
     grouped = Agregation(collection, pipeline)  # Type: Cursor
-    result = grouped.group_documents()
+    result = grouped.aggr_documents()
 
     for customer in result:
-        print(customer)
+        return customer
+
+
+def get_best_customer_purchases():
+    customer = find_best_customer()
+    name = customer["_id"]
+    final_name = name["customer"]
+    pipeline = [{"$match": {"customer": final_name}}]
+
+    aggr = Agregation(collection, pipeline)  # Type: Cursor
+    result = aggr.aggr_documents()
+
+    for purchases in result:
+        print(purchases)
+        # return customer
 
 
 
@@ -119,5 +133,8 @@ if __name__ == "__main__":
     find_april_sales()
     print("-----April sales end----")
     print("-----Best customer begin----")
-    find_best_customer()
+    print(find_best_customer())
     print("-----Best customer end----")
+    print("-----Best customer purchases begin----")
+    get_best_customer_purchases()
+    print("-----Best customer purchases end----")
