@@ -47,6 +47,7 @@ class DbTarget:
         return database
 
 
+# -----------April Sales----------------------------
 class FilterAllProd:
     def __init__(self, collection: Collection, filter_criteria: List[Dict[str, Any]]):
         self.collection = collection
@@ -77,7 +78,46 @@ def find_april_sales():
         print(sale)
 
 
+# -------------Best Customer--------------------------
+
+
+class Agregation:
+    def __init__(self, collection: Collection, pipeline: List[Dict[str, Any]]):
+        self.collection = collection
+        self.pipeline = pipeline
+
+    def group_documents(self) -> Cursor:
+        # pipeline = [{"$group": self.group_fields}]
+        return self.collection.aggregate(self.pipeline)
+
+
+def find_best_customer():
+    pipeline = [
+        {
+            "$group": {
+                "_id": {
+                    "customer": "$customer",
+                },
+                "count": {"$sum": 1},
+                "total_purchases": {"$sum": {"$multiply": ["$quantity", "$price"]}},
+            },
+        },
+        {"$sort": {"total_purchases": -1}},
+        {"$limit": 1},
+    ]
+
+    grouped = Agregation(collection, pipeline)  # Type: Cursor
+    result = grouped.group_documents()
+
+    for customer in result:
+        print(customer)
+
+
+
 if __name__ == "__main__":
     print("-----April sales begin----")
     find_april_sales()
     print("-----April sales end----")
+    print("-----Best customer begin----")
+    find_best_customer()
+    print("-----Best customer end----")
